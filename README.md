@@ -4,6 +4,8 @@ A premium, modern, production-ready portfolio representing a DevOps Engineer. De
 
 This portfolio is optimized for serverless edge deployment on **AWS S3 Static Website Hosting** secured and cached via **Amazon CloudFront CDN**.
 
+🔗 **Live Link:** [http://static-website-for-cicd-practice.s3-website-us-west-2.amazonaws.com/#hero](http://static-website-for-cicd-practice.s3-website-us-west-2.amazonaws.com/#hero)
+
 ![DevOps Static Portfolio](./image.png)
 
 ## 🚀 Architecture Overview
@@ -38,69 +40,53 @@ The system architecture utilizes cloud-native, serverless components to achieve 
 Follow these industry-standard DevOps guidelines to deploy the portfolio to AWS:
 
 ### 1. Host Assets in Amazon S3
-To maintain security best practices, the S3 bucket is kept private, and access is restricted exclusively to CloudFront.
 1. Log into the AWS Console and open the **Amazon S3** service.
 2. Click **Create Bucket**.
 3. Choose a unique name (e.g. `yourname-devops-portfolio`) and select your region (e.g., `us-east-1`).
-4. Keep **Block all public access** checked (highly secure, no public read access allowed directly to S3).
-5. Leave other settings at default and click **Create Bucket**.
+4. Under **Block Public Access settings for this bucket**, uncheck **Block all public access** to allow the public read policy.
+5. Click **Create Bucket**.
+6. Select the newly created bucket, go to the **Properties** tab.
+7. Scroll to the bottom to **Static website hosting**, click **Edit**:
+   - Select **Enable**.
+   - **Hosting type**: Host a static website.
+   - **Index document**: `index.html`.
+   - Click **Save changes**. Note down the **Bucket website endpoint** (e.g. `http://yourname-devops-portfolio.s3-website-us-east-1.amazonaws.com`).
 
-### 2. Request SSL Certificate in AWS Certificate Manager (ACM)
-CloudFront requires the SSL certificate to be hosted in the `us-east-1` region to enable custom HTTPS domain names.
-1. Open the **AWS Certificate Manager** (ACM) in `us-east-1` (N. Virginia).
-2. Click **Request Certificate** -> Select **Request a public certificate**.
-3. Add your domain name (e.g. `yourname.io` and `*.yourname.io`).
-4. Select **DNS Validation** (Recommended) and request the certificate.
-5. Add the generated CNAME records to your DNS registrar (e.g. Route 53, GoDaddy) to validate ownership.
-
-### 3. Create CloudFront CDN Distribution
+### 2. Create CloudFront CDN Distribution (Optional)
+If you want to speed up global delivery and cache your site at edge locations:
 1. Open the **CloudFront** console and click **Create Distribution**.
-2. **Origin Domain**: Select the S3 bucket created in Step 1.
-3. **Origin Access**: Choose **Origin access control settings (recommended)** (OAC). 
-   - Click **Create Control Setting** and use default configurations.
-   - *Note: S3 bucket access is now limited to requests originating from this CloudFront distribution.*
-4. **Viewer Protocol Policy**: Select **Redirect HTTP to HTTPS**.
-5. **Cache Key and Origin Requests**: Select **Cache-Optimized**.
-6. **Web Application Firewall (WAF)**: Select "Do not enable security protections" (unless enterprise WAF budgets are allocated).
-7. **Alternate Domain Names (CNAME)**: Add your custom domain (e.g., `portfolio.yourname.io`).
-8. **Custom SSL Certificate**: Select the SSL certificate validated in Step 2 from ACM.
-9. **Default Root Object**: Enter `index.html`.
-10. Click **Create Distribution**.
+2. **Origin Domain**: Paste your **S3 Bucket website endpoint** (from Step 1, e.g. `yourname-devops-portfolio.s3-website-us-east-1.amazonaws.com`).
+   - *Note: Do not select the bucket from the dropdown, as that points to the raw S3 bucket API instead of the website hosting endpoint.*
+3. **Viewer Protocol Policy**: Select **Redirect HTTP to HTTPS** (CloudFront provides automatic HTTPS/SSL validation on default `*.cloudfront.net` URLs for free).
+4. **Cache Key and Origin Requests**: Select **Cache-Optimized**.
+5. **Web Application Firewall (WAF)**: Select "Do not enable security protections".
+6. Click **Create Distribution**.
+7. Once deployed, note down the **Distribution domain name** (e.g. `d111111abcdef8.cloudfront.net`) which serves as your secure HTTPS endpoint.
 
-### 4. Apply S3 Bucket Policy
-Once the CloudFront distribution is created, copy the bucket policy provided by CloudFront.
+### 3. Apply S3 Bucket Policy
 1. Open **Amazon S3** -> Select your bucket -> Go to the **Permissions** tab.
-2. Scroll to **Bucket policy** and click **Edit**.
-3. Paste the bucket policy allowing CloudFront OAC read permissions:
+2. Under **Block public access (bucket settings)**, click **Edit**, uncheck **Block all public access**, and click **Save changes**.
+3. Scroll to **Bucket policy** and click **Edit**.
+4. Paste the public read bucket policy:
 ```json
 {
-    "Version": "2018-10-17",
-    "Statement": {
-        "Sid": "AllowCloudFrontServicePrincipalReadOnly",
-        "Effect": "Allow",
-        "Principal": {
-            "Service": "cloudfront.amazonaws.com"
-        },
-        "Action": "s3:GetObject",
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
-        "Condition": {
-            "StringEquals": {
-                "AWS:SourceArn": "arn:aws:cloudfront::YOUR-AWS-ACCOUNT-ID:distribution/YOUR-CLOUDFRONT-DIST-ID"
-            }
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::Bucket-Name/*"
+            ]
         }
-    }
+    ]
 }
 ```
-4. Replace `YOUR-S3-BUCKET-NAME`, `YOUR-AWS-ACCOUNT-ID`, and `YOUR-CLOUDFRONT-DIST-ID` with your values. Click **Save changes**.
-
-### 5. Map DNS in Route 53
-1. Open **Route 53** and navigate to your Hosted Zone.
-2. Click **Create Record**.
-3. **Record Name**: e.g., `portfolio` (or leave blank for root domain).
-4. **Type**: `A - Routes traffic to an IPv4 address and some AWS resources`.
-5. Toggle **Alias** to ON.
-6. **Route Traffic To**: Choose `Alias to CloudFront distribution` and select your distribution from the dropdown.
-7. Click **Create Records**.
+5. Replace `Bucket-Name` with your actual S3 bucket name. Click **Save changes**.
 
 ---
 
