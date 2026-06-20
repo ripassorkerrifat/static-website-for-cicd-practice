@@ -4,6 +4,8 @@ A premium, modern, production-ready portfolio representing a DevOps Engineer. De
 
 This portfolio is optimized for serverless edge deployment on **AWS S3 Static Website Hosting** secured and cached via **Amazon CloudFront CDN**.
 
+![DevOps Static Portfolio](./image.png)
+
 ## 🚀 Architecture Overview
 
 The system architecture utilizes cloud-native, serverless components to achieve 100% uptime SLA, sub-20ms global delivery speeds, and bank-grade SSL security:
