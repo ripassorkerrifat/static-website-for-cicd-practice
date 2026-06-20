@@ -269,11 +269,11 @@ Counting objects: 100% (7/7), done.
 Delta compression using up to 8 threads
 Compressing objects: 100% (4/4), done.
 Writing objects: 100% (4/4), 480 bytes | 480.00 KiB/s, done.
-To github.com:devops-engineer/static-portfolio.git
+To github.com:ripassorkerrifat/static-website-for-cicd-practice.git
    f3a2b1c..e5d6c7b  main -> main
 [SUCCESS] Commit successfully pushed. Remote repo updated.`,
     cmd: 'git push origin main',
-    action: 'Webhook triggered: POST /repos/devops-engineer/static-portfolio/hooks'
+    action: 'Webhook triggered: POST /repos/ripassorkerrifat/static-website-for-cicd-practice/hooks'
   },
   github_repo: {
     title: 'GitHub Repository',
@@ -281,7 +281,7 @@ To github.com:devops-engineer/static-portfolio.git
     desc: 'Centralized Version Control System. Standardizes git workflow branch protection rules and acts as the source of truth. Sends immediate push payloads to automate downstream build workers.',
     logs: `[INFO] Webhook event received from GitHub.
 [INFO] Headers: X-GitHub-Event: push, X-Hub-Signature-256: sha256=9b7c...
-[INFO] Payload parsed: Repository 'static-portfolio', branch 'main'.
+[INFO] Payload parsed: Repository 'static-website-for-cicd-practice', branch 'main'.
 [INFO] Comparing commits: f3a2b1c8f -> e5d6c7b2a
 [INFO] Triggering workflow: .github/workflows/deploy.yml
 [INFO] Job queue allocated. Runner ID assigned: GHA-RUN-992
@@ -346,13 +346,13 @@ Time:        1.45s
     title: 'Deploy to AWS S3',
     badge: 'STAGE 6: STORAGE HOSTING',
     desc: 'AWS S3 hosts the application files. AWS CLI synchronizes distribution assets to the target S3 hosting bucket with custom HTTP cache-control metadata tags.',
-    logs: `[INFO] Run aws s3 sync . s3://portfolio-static-bucket --delete
-[INFO] S3 upload: ./index.html to s3://portfolio-static-bucket/index.html (Content-Type: text/html)
-[INFO] S3 upload: ./css/style.css to s3://portfolio-static-bucket/css/style.css (Content-Type: text/css)
-[INFO] S3 upload: ./js/script.js to s3://portfolio-static-bucket/js/script.js (Content-Type: application/javascript)
+    logs: `[INFO] Run aws s3 sync . s3://static-website-for-cicd-practice --delete
+[INFO] S3 upload: ./index.html to s3://static-website-for-cicd-practice/index.html (Content-Type: text/html)
+[INFO] S3 upload: ./css/style.css to s3://static-website-for-cicd-practice/css/style.css (Content-Type: text/css)
+[INFO] S3 upload: ./js/script.js to s3://static-website-for-cicd-practice/js/script.js (Content-Type: application/javascript)
 [INFO] S3 metadata set: Cache-Control: max-age=31536000 for style assets.
 [SUCCESS] S3 storage synced. 12 objects updated, 0 deleted.`,
-    cmd: 'aws s3 sync . s3://portfolio-bucket --delete',
+    cmd: 'aws s3 sync . s3://static-website-for-cicd-practice --delete',
     action: 'S3 Sync Completed -> status: 200 OK'
   },
   cloudfront_cdn: {
@@ -373,22 +373,19 @@ Time:        1.45s
     title: 'Production Live',
     badge: 'STAGE 8: ACTIVE ENDPOINT',
     desc: 'The website is live! Hosted under HTTPS with SSL/TLS termination, sub-20ms latency worldwide via AWS Certificate Manager (ACM), Route 53, and CloudFront.',
-    logs: `[INFO] Run curl -I https://portfolio.cloudops.sh
-HTTP/2 200
+    logs: `[INFO] Run curl -I http://static-website-for-cicd-practice.s3-website-us-west-2.amazonaws.com
+HTTP/1.1 200 OK
 content-type: text/html; charset=UTF-8
 content-length: 18245
 date: Sat, 20 Jun 2026 03:10:00 GMT
-server: CloudFront
-x-cache: Hit from cloudfront
-via: 1.1 e5d6c7b.cloudfront.net (CloudFront)
-x-amz-cf-pop: SFO53-C1
-x-amz-cf-id: T9aF0c_8lG4P...
+server: AmazonS3
+x-amz-request-id: T9aF0c_8lG4P...
 
 [INFO] Running synthetic health checks...
-[INFO] Latency check: Paris PoP (12ms), Tokyo PoP (28ms), Silicon Valley PoP (9ms)
+[INFO] Latency check: Paris PoP (22ms), Tokyo PoP (48ms), Silicon Valley PoP (9ms)
 [SUCCESS] Site live. Health check STATUS: 100% HEALTHY`,
-    cmd: 'curl -I https://portfolio.cloudops.sh',
-    action: 'Active CDN endpoint -> https://portfolio.cloudops.sh'
+    cmd: 'curl -I http://static-website-for-cicd-practice.s3-website-us-west-2.amazonaws.com',
+    action: 'Active S3 hosting URL -> http://static-website-for-cicd-practice.s3-website-us-west-2.amazonaws.com'
   }
 };
 
